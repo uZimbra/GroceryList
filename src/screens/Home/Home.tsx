@@ -1,5 +1,5 @@
 import {zodResolver} from '@hookform/resolvers/zod';
-import React, {useCallback, useState} from 'react';
+import React, {useCallback} from 'react';
 import {useForm} from 'react-hook-form';
 import {FlatList, SafeAreaView, Text, View} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
@@ -11,15 +11,12 @@ import {ControlledMoneyInput} from '../../components/ControlledMoneyInput/Contro
 import Margin from '../../components/Margin/Margin';
 import ProductListItem from '../../components/ProductListItem/ProductListItem';
 import Separator from '../../components/Separator/Separator';
+import {useProducts} from '../../contexts/products';
+import {useTheme} from '../../contexts/theme';
+import {Product} from '../../domain/Product';
+import {generateUniqueId} from '../../utils/idGenerator';
 import {currencyFormatter} from '../../utils/numberFormatUtils';
 import {createStyles} from './styles';
-
-interface Product {
-  id: number;
-  name: string;
-  quantity: number;
-  price: number;
-}
 
 const formSchema = z.object({
   name: z
@@ -38,46 +35,42 @@ const formSchema = z.object({
 type formSquemaType = z.infer<typeof formSchema>;
 
 export default function Home(): JSX.Element {
-  // const isDarkMode = useColorScheme() === 'dark';
   const styles = createStyles();
-  const [productList, setProductList] = useState<Product[]>([]);
-
+  const {theme, toggleTheme} = useTheme();
+  const {productList, addProduct, handleDeleteProduct} = useProducts();
   const {control, handleSubmit} = useForm<formSquemaType>({
     resolver: zodResolver(formSchema),
   });
 
   function submitProductForm(data: formSquemaType) {
     const prod = {
-      id: productList.length + 1,
+      id: generateUniqueId(),
       name: data.name,
       quantity: Number(data.quantity),
       price: Number(data.price),
     } as Product;
 
-    setProductList(value => [...value, prod]);
-  }
-
-  function handleDeleteProduct(productId: number) {
-    setProductList(current => current.filter(item => item.id != productId));
+    addProduct(prod);
   }
 
   const renderProduct = useCallback(
     ({item}: any) => (
-      <ProductListItem
-        key={item.id}
-        name={item.name}
-        quantity={item.quantity}
-        price={item.price}
-        id={item.id}
-        onDelete={handleDeleteProduct}
-      />
+      <ProductListItem product={item} onDelete={handleDeleteProduct} />
     ),
     [],
   );
 
   return (
     <SafeAreaView style={styles.screenContainer}>
-      <Text style={styles.screenTitle}>Lista de compras</Text>
+      <View style={styles.screenTitleContainer}>
+        <Text style={styles.screenTitle}>Lista de compras</Text>
+        <Feather
+          name={theme ? 'moon' : 'sun'}
+          color="black"
+          size={30}
+          onPress={() => toggleTheme(!theme)}
+        />
+      </View>
       <ControlledInput
         control={control}
         name="name"
@@ -91,13 +84,6 @@ export default function Home(): JSX.Element {
         placeholder="Quantidade"
         keyboardType="decimal-pad"
       />
-      {/* <ControlledInput
-        control={control}
-        name="price"
-        icon={<MaterialIcons name="attach-money" />}
-        placeholder="Preço"
-        keyboardType="numeric"
-      /> */}
       <ControlledMoneyInput
         control={control}
         name="price"

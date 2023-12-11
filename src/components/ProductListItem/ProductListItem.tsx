@@ -1,23 +1,19 @@
 import {Text, TouchableOpacity, View, useColorScheme} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import {Product} from '../../domain/Product';
 import {currencyFormatter} from '../../utils/numberFormatUtils';
 import {createStyles} from './styles';
 
 export interface ProductListItemProp {
-  id: number;
-  name: string;
-  quantity: number;
-  price: number;
-  onDelete(id: number): void;
+  product: Product;
+  onDelete(id: string): void;
 }
 
 export default function ProductListItem({
-  id,
-  name,
-  quantity,
-  price,
+  product,
   onDelete,
 }: Readonly<ProductListItemProp>): React.JSX.Element {
+  const {id, name, price, quantity} = product;
   const isDarkTheme = useColorScheme() === 'dark';
   const styles = createStyles(isDarkTheme);
 

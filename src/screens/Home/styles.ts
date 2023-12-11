@@ -7,6 +7,10 @@ export function createStyles(isDarkMode?: boolean) {
       backgroundColor: isDarkMode ? '#454545' : '#eaeaea',
       padding: 20,
     },
+    screenTitleContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
     screenTitle: {
       fontSize: 22,
       marginBottom: 30,

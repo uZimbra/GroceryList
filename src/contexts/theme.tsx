@@ -1,28 +1,39 @@
-import React, {ReactNode, createContext, useState} from 'react';
+import React, {createContext, useContext, useMemo, useState} from 'react';
 
-type Props = {
-  children: ReactNode;
+type ThemeContextData = {
+  theme: boolean;
+  toggleTheme: (theme: boolean) => void;
 };
-
-interface ThemeContextData {
-  theme: string;
-  toggleTheme(theme: string): void;
-}
 
 const ThemeContext = createContext<ThemeContextData>({} as ThemeContextData);
 
-export function ThemeProvider({children}: Props): JSX.Element {
-  const [theme, setTheme] = useState('light');
+export function ThemeProvider({
+  children,
+}: Readonly<{children: React.ReactNode}>): JSX.Element {
+  const [theme, setTheme] = useState(true);
 
-  function toggleTheme(theme: string) {
+  function toggleTheme(theme: boolean) {
     setTheme(theme);
   }
 
+  const contextProps = useMemo(
+    () => ({theme, toggleTheme}),
+    [theme, toggleTheme],
+  );
+
   return (
-    <ThemeContext.Provider value={{theme, toggleTheme}}>
+    <ThemeContext.Provider value={contextProps}>
       {children}
     </ThemeContext.Provider>
   );
 }
 
-export default ThemeContext;
+export function useTheme() {
+  const context = useContext(ThemeContext);
+
+  if (!context) {
+    throw new Error('useTheme must be used within an ThemeProvider');
+  }
+
+  return context;
+}
